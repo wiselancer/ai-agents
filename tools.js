@@ -1,31 +1,36 @@
 export async function getCurrentWeather({ location }) {
-    const weather = {
-        location,
-        temperature: "75",
-        forecast: "sunny"
+    try {
+        const weatherUrl = new URL("https://apis.scrimba.com/openweathermap/data/2.5/weather")
+        weatherUrl.searchParams.append("q", location)
+        weatherUrl.searchParams.append("units", "imperial")
+        const res = await fetch(weatherUrl)
+        const data = await res.json()
+        return JSON.stringify(data)
+    } catch(err) {
+        console.error(err.message)
     }
-    return JSON.stringify(weather)
 }
 
 export async function getLocation() {
-  try {
-    const response = await fetch('https://ipapi.co/json/')
-    const text = await response.json()
-    return JSON.stringify(text)
-  } catch (err) {
-    console.log(err)
-  }
+    try {
+        const response = await fetch('https://ipapi.co/json/')
+        const text = await response.json()
+        return JSON.stringify(text)
+    } catch (err) {
+        console.error(err.message)
+    }
 }
 
-export const tools = [
+export const functions = [
     {
         function: getCurrentWeather,
+        parse: JSON.parse,
         parameters: {
             type: "object",
             properties: {
                 location: {
                     type: "string",
-                    description: "The location from where to get the weather"
+                    description: "The name of the city from where to get the weather"
                 }
             },
             required: ["location"]
