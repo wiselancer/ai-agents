@@ -27,9 +27,9 @@ async function agent(query) {
             tools
         })
 
-        console.log(response.choices[0])
         const { finish_reason: finishReason, message } = response.choices[0]
         const { tool_calls: toolCalls } = message
+        console.log(toolCalls)
         
         messages.push(message)
         
@@ -41,7 +41,8 @@ async function agent(query) {
             for (const toolCall of toolCalls) {
                 const functionName = toolCall.function.name
                 const functionToCall = availableFunctions[functionName]
-                const functionResponse = await functionToCall()
+                const functionArgs = JSON.parse(toolCall.function.arguments)
+                const functionResponse = await functionToCall(functionArgs)
                 console.log(functionResponse)
                 messages.push({
                     tool_call_id: toolCall.id,
@@ -51,8 +52,7 @@ async function agent(query) {
                 })
             }
         }
-        
     }
 }
 
-await agent("What's the current weather in Tokyo and New York City and Oslo?")
+await agent("What's the current weather in my current location?")
