@@ -1,5 +1,5 @@
 import OpenAI from "openai"
-import { getCurrentWeather, getLocation } from "./tools"
+import { getCurrentWeather, getLocation, tools } from "./tools"
 
 export const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
@@ -19,8 +19,8 @@ async function agent(query) {
 
     const MAX_ITERATIONS = 5
 
-    // for (let i = 0; i < MAX_ITERATIONS; i++) {
-    //     console.log(`Iteration #${i + 1}`)
+    for (let i = 0; i < MAX_ITERATIONS; i++) {
+        console.log(`Iteration #${i + 1}`)
         const response = await openai.chat.completions.create({
             model: "gpt-3.5-turbo-1106",
             messages,
@@ -30,6 +30,8 @@ async function agent(query) {
         console.log(response.choices[0])
         const { finish_reason: finishReason, message } = response.choices[0]
         const { tool_calls: toolCalls } = message
+        
+        messages.push(message)
         
         if (finishReason === "stop") {
             console.log(message.content)
@@ -41,31 +43,16 @@ async function agent(query) {
                 const functionToCall = availableFunctions[functionName]
                 const functionResponse = await functionToCall()
                 console.log(functionResponse)
+                messages.push({
+                    tool_call_id: toolCall.id,
+                    role: "tool",
+                    name: functionName,
+                    content: functionResponse
+                })
             }
         }
         
-        /**
-         * Challenge:
-         * Write the logic for the "tool_calls" finish reason. 
-         * Console.log the function response.
-         * Notes:
-         * - Assume our functions won't ever have any arguments. We'll
-         *   update this later
-         * - Notice that "tool_calls" is an array, and account for that
-         *   when writing your code
-         * - Don't worry about pushing any messages to the messages array yet
-         */
-        
-        
-        // Check finish_reason
-        // if "stop"
-            // return the result
-        // else if "tool_calls"
-            // call functions
-            // append results
-            // continue
-        
-    // }
+    }
 }
 
 await agent("What's the current weather in Tokyo and New York City and Oslo?")
